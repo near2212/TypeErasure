@@ -1,0 +1,78 @@
+ 
+#include <iostream>
+#include <vector>
+#include <memory>
+ 
+ 
+using namespace std;
+ 
+class ICallable {
+public:
+    virtual void call() = 0;
+};
+ 
+template<typename T>
+class Callable:public ICallable {
+T object;
+public:
+    
+    Callable(const T& _callable): object(object){}
+     void call()
+    {
+         object();
+    }
+};
+class Function
+{
+    std::shared_ptr<ICallable> m_callable;
+public:
+    Function () = default;
+
+template <typename U>
+    Function (const U& _lambda):m_callable(make_shared<Callable<U>>(_lambda))
+    {
+ 
+    }
+ //я говорила что нужны всякие конструкторы операторы, но нет , базовое все отработает отлично
+   
+ 
+    void operator ()() const
+    {
+        m_callable->call();
+    }
+ 
+ 
+
+};
+ 
+ 
+class Foo{
+public:
+    Foo(){}
+private:
+    Function m_f;
+};
+
+struct SomeStruct
+{
+    void operator ()()
+    {
+        cout << "Hello "<<endl;
+        
+    }
+};
+ 
+int main(void){
+    std::vector<Function> functions;
+    functions.emplace_back([](){ cout << "Hello" << endl;});
+    functions.emplace_back(SomeStruct());
+    Function function = functions[0];
+ function();
+    functions.push_back(Function([](){ cout << "Hello"<< endl;}));
+ 
+    for (auto const & f: functions)
+        f();
+ 
+    return 0;
+}
+ 
